@@ -4,11 +4,10 @@
 using namespace daisy;
 
 DaisySeed hw;
-Led led;
 
 // Audio processing parameters
 const float SAMPLE_RATE = 48000.0f;
-const float THRESHOLD = 0.1f;  // RMS threshold (0.0 to 1.0)
+const float THRESHOLD = 0.3f;  // RMS threshold (0.0 to 1.0)
 const size_t BLOCK_SIZE = 48;  // Audio block size
 
 // LED pulse parameters  
@@ -48,7 +47,7 @@ void audio_callback(AudioHandle::InputBuffer in,
         // Trigger LED pulse
         led_active = true;
         pulse_start_time = System::GetNow();
-        led.Set(1.0f); // Turn LED on
+        hw.SetLed(1); // Turn LED on
     }
     
     // Pass audio through (optional - remove if no audio output needed)
@@ -59,15 +58,14 @@ void audio_callback(AudioHandle::InputBuffer in,
 }
 
 int main(void) {
+    hw.Configure();
     // Initialize hardware
     hw.Init();
     hw.SetAudioBlockSize(BLOCK_SIZE);
 
     hw.SetAudioSampleRate(daisy::SaiHandle::Config::SampleRate::SAI_48KHZ);
     
-    // Initialize LED (using built-in LED)
-    led.Init(hw.GetPin(22), false); // Pin 22 is built-in LED, false = not inverted
-    led.Set(0.0f); // Start with LED off
+    hw.SetLed(0);
     
     // Start audio processing
     hw.StartAudio(audio_callback);
@@ -78,13 +76,11 @@ int main(void) {
         if(led_active) {
             uint32_t current_time = System::GetNow();
             if(current_time - pulse_start_time >= PULSE_DURATION_MS) {
-                led.Set(0.0f); // Turn LED off
+                hw.SetLed(0); // Turn LED off
                 led_active = false;
             }
         }
         
-        // Update LED state
-        led.Update();
         
         // Small delay to prevent excessive CPU usage
         System::Delay(1);
