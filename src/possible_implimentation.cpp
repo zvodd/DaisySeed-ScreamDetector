@@ -19,6 +19,7 @@
 #include "daisysp.h" // Include DaisySP for FFT
 #include <cmath>
 #include <vector>
+#include "../inc/fft.h"
 
 using namespace daisy;
 using namespace daisysp;
@@ -67,7 +68,7 @@ volatile bool analysis_pending = false;
 uint32_t last_trigger_time = 0;
 
 // MFCC processing objects and buffers stored in fast internal RAM
-FFT fft;
+Fft fft;
 float DSY_RAM_BSS fft_input[FFT_SIZE];
 float DSY_RAM_BSS fft_output[FFT_SIZE * 2]; // For complex result
 float DSY_RAM_BSS frame[FRAME_LENGTH];

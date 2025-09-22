@@ -1,0 +1,5 @@
+https://teachablemachine.withgoogle.com
+
+https://github.com/GuitarML/NeuralSeed/tree/main
+
+https://github.com/jatinchowdhury18/RTNeural
