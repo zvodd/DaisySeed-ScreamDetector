@@ -2,7 +2,7 @@
 TARGET = DAISY_SEED_SCREAM
 
 # Sources
-CPP_SOURCES = ./src/possible_implimentation.cpp
+CPP_SOURCES = ./src/main_mcff_compare.cpp
 
 # Library Locations
 LIBDAISY_DIR = ../DaisyExamples/libDaisy/

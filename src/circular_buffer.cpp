@@ -178,7 +178,7 @@ int main(void) {
     // Initialize hardware
     hw.Init();
     hw.SetAudioBlockSize(BLOCK_SIZE);
-    hw.SetAudioSampleRate(DaisySeed::AudioSampleRate::SAI_48KHZ);
+    hw.SetAudioSampleRate(daisy::SaiHandle::Config::SampleRate::SAI_48KHZ);
     
     // Initialize LED
     led.Init(hw.GetPin(22), false);
