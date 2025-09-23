@@ -7,6 +7,24 @@ using namespace daisy;
 DaisySeed hw;
 
 // ====================================================================
+// 0. About
+// ====================================================================
+// Pretty much a straight conversion of:
+// https://www.geeksforgeeks.org/nlp/mel-frequency-cepstral-coefficients-mfcc-for-speech-recognition/
+
+// There is an inital RMS threshold stage that triggers MFCC analisys to save power.
+
+// So far the matching on MFCC-DCT-coefficients is untested and undecided.
+
+// Each audio buffer would be 19.2 Kilobytes per 100ms of samples
+// There are 2 300ms buffers, totaling ~120kb
+// The rest of the buffers should be De minimis, say < 20kb
+
+
+
+
+
+// ====================================================================
 // 1. Configuration & Parameters (Unchanged)
 // ====================================================================
 const float SAMPLE_RATE = 48000.0f;
@@ -22,6 +40,7 @@ const size_t FFT_SIZE = 2048;
 const int NUM_MEL_BANDS = 40;
 const int NUM_MFCC_COEFFS = 13;
 const size_t NUM_FRAMES = (BUFFER_SAMPLES > FRAME_LENGTH) ? (1 + (BUFFER_SAMPLES - FRAME_LENGTH) / FRAME_STRIDE) : 0;
+// (BUFFER_SAMPLES[14400] - FRAME_LENGTH[1200]) / FRAME_STRIDE[480] = 27.5 Frames = 27
 
 
 // ====================================================================
@@ -203,7 +222,7 @@ void audio_callback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, 
     }
 }
 
-void compare_mfccs()
+bool compare_mfccs()
 {
     float total_error = 0.0f;
     for(size_t i = 0; i < NUM_FRAMES; ++i)
@@ -216,15 +235,24 @@ void compare_mfccs()
     }
     float mse = total_error / (NUM_FRAMES * NUM_MFCC_COEFFS);
 
-    if(mse < SCREAM_MATCH_THRESHOLD)
-    {
-        hw.SetLed(true); // Scream detected!
-    }
-    else
-    {
-        hw.SetLed(false);
-    }
+    return mse < SCREAM_MATCH_THRESHOLD;
 }
+
+// TODO: Exeriment with suitable matching techniques on series of Mel-DCTs
+// void compare_delta_mfccs(){
+//     // calculate the delta of consecutive frames, match when from
+//     // delta0 = calculated_mfccs[1][:] - calculated_mfccs[0][:]
+
+//     for(size_t i = 0; i < NUM_FRAMES; ++i)
+//     {
+//         // delta_w
+//         for(size_t j = 0; j < NUM_MFCC_COEFFS; ++j)
+//         {
+//             //
+//         }
+//     }
+
+// }
 
 int main(void)
 {
@@ -242,7 +270,7 @@ int main(void)
         if(analysis_pending)
         {
             // Create a linear copy of the circular buffer
-            float temp_audio_buffer[BUFFER_SAMPLES];
+            float temp_audio_buffer[BUFFER_SAMPLES]; 
             size_t read_pos = buffer_write_pos;
             for(int i = BUFFER_SAMPLES - 1; i >= 0; --i)
             {
@@ -254,8 +282,15 @@ int main(void)
             mfcc_pipeline_process(&mfcc, temp_audio_buffer, calculated_mfccs);
             
             // Compare the result
-            compare_mfccs();
-            
+            if (compare_mfccs())
+            {
+                // detection event
+                hw.SetLed(true);
+            }
+            else
+            {
+                hw.SetLed(false);
+            }
             // Reset the flag
             analysis_pending = false;
         }
