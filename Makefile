@@ -1,8 +1,8 @@
 # Project Name
-TARGET = DAISY_SEED_CLAPPER_RMS_FIRMWARE
+TARGET = DAISY_SEED_SCREAM
 
 # Sources
-CPP_SOURCES = ./src/main_clapper_rms.cpp
+CPP_SOURCES = ./src/possible_implimentation.cpp
 
 # Library Locations
 LIBDAISY_DIR = ../DaisyExamples/libDaisy/

@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../DaisyExamples/libDaisy/src/**",
+                "${workspaceFolder}/../DaisyExamples/libDaisy/core/*",
+                "${workspaceFolder}/../DaisyExamples/libDaisy/Drivers/**",
+                "${workspaceFolder}/../DaisyExamples/libDaisy/Middlewares/**",
+                "${workspaceFolder}/../DaisyExamples/DaisySP/Source/**"
+            ]
+        }
+    ],
+    "version": 4
+}

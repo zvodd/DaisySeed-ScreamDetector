@@ -19,7 +19,7 @@
 #include "daisysp.h" // Include DaisySP for FFT
 #include <cmath>
 #include <vector>
-#include "../inc/fft.h"
+
 
 using namespace daisy;
 using namespace daisysp;
@@ -68,19 +68,19 @@ volatile bool analysis_pending = false;
 uint32_t last_trigger_time = 0;
 
 // MFCC processing objects and buffers stored in fast internal RAM
-Fft fft;
-float DSY_RAM_BSS fft_input[FFT_SIZE];
-float DSY_RAM_BSS fft_output[FFT_SIZE * 2]; // For complex result
-float DSY_RAM_BSS frame[FRAME_LENGTH];
-float DSY_RAM_BSS power_spectrum[FFT_SIZE / 2 + 1];
-float DSY_RAM_BSS mel_energies[NUM_MEL_BANDS];
+//Fft fft;
+float DSY_SDRAM_BSS fft_input[FFT_SIZE];
+float DSY_SDRAM_BSS fft_output[FFT_SIZE * 2]; // For complex result
+float DSY_SDRAM_BSS frame[FRAME_LENGTH];
+float DSY_SDRAM_BSS power_spectrum[FFT_SIZE / 2 + 1];
+float DSY_SDRAM_BSS mel_energies[NUM_MEL_BANDS];
 
 // Pre-calculated tables
-float DSY_RAM_BSS hamming_window[FRAME_LENGTH];
+float DSY_SDRAM_BSS hamming_window[FRAME_LENGTH];
 std::vector<std::vector<float>> mel_filterbank;
 
 // Final MFCC output
-float DSY_RAM_BSS calculated_mfccs[NUM_FRAMES][NUM_MFCC_COEFFS];
+float DSY_SDRAM_BSS calculated_mfccs[NUM_FRAMES][NUM_MFCC_COEFFS];
 
 // ====================================================================
 // 3. Placeholder for Reference Scream MFCCs
@@ -203,7 +203,13 @@ void perform_mfcc_analysis() {
         for(size_t j=0; j<FFT_SIZE; ++j) {
             fft_input[j] = (j < FRAME_LENGTH) ? frame[j] : 0.0f;
         }
-        fft.Process(fft_input, fft_output, false); // false for forward FFT
+        
+        
+        // replace with  arm_cfft_init_f32() from CMSIS-DSP
+
+        //fft.Process(fft_input, fft_output, false); // false for forward FFT
+
+
 
         // 3. Power Spectrum
         for (size_t j = 0; j < FFT_SIZE / 2 + 1; ++j) {
@@ -299,7 +305,6 @@ int main(void) {
     // Initialize MFCC components
     init_hamming_window();
     init_mel_filterbank();
-    fft.Init(FFT_SIZE, SAMPLE_RATE, FFT::Config::Window::NONE, 0);
 
     hw.StartAudio(audio_callback);
 
