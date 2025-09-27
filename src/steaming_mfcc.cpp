@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "arm_math.h"
-
+#include "myutils.h"
 
 
 using namespace daisy;
@@ -22,7 +22,7 @@ const int   BLOCK_SIZE  = 64;       // Number of samples per audio callback
 // MFCC Frame processing settings
 const int   FRAME_LENGTH      = 400;  // Window size in samples (25ms * 16000Hz)
 const int   FRAME_STRIDE      = 160;  // Hop size in samples (10ms * 16000Hz)
-const int   FFT_SIZE          = 512;  // Must be >= FRAME_LENGTH and a power of 2
+const int   FFT_SIZE          = 2048;  // Must be >= FRAME_LENGTH and a power of 2
 const float PRE_EMPHASIS_ALPHA = 0.97f;
 
 // Mel Filterbank settings
@@ -59,6 +59,11 @@ float prev_sample_for_preemphasis = 0.0f; // Store last sample for pre-emphasis 
 
 // CMSIS-DSP FFT instance
 arm_rfft_fast_instance_f32 fft_instance;
+
+
+//debug stuff
+volatile int tickprint_c0 = 0;
+volatile int tickprint_c1 = 0;
 
 // ====================================================================
 // 3. Helper and Initialization Functions
@@ -210,6 +215,7 @@ void ProcessFrame(float* current_frame) {
 // ====================================================================
 
 void AudioCallback(AudioHandle::InputBuffer in, AudioHandle::OutputBuffer out, size_t size) {
+    TICK_AND_PRINT(tickprint_c0, 10, "A");
     for (size_t i = 0; i < size; i++) {
         // We only care about the left input channel for this example
         circular_audio_buffer[write_pos] = in[0][i];
@@ -236,7 +242,9 @@ int main(void) {
 
     // Initialize MFCC components
     init_hamming_window();
+    hw.PrintLine("1");
     init_mel_filterbank();
+    hw.PrintLine("2");
 
     // Initialize the CMSIS-DSP FFT instance
     // if (arm_rfft_fast_init_f32(&fft_instance, FFT_SIZE) != ARM_MATH_SUCCESS) {
@@ -245,11 +253,12 @@ int main(void) {
     // }
 
     my_rfft_fast_init_2048(&fft_instance);
-
+    hw.PrintLine("3");
     
     // Start the audio callback
     hw.StartAudio(AudioCallback);
-
+    hw.PrintLine("4");
+    
     while (1) {
         // Calculate how many new samples are available in the circular buffer
         int samples_available = (write_pos - read_pos + CIRCULAR_BUFFER_SIZE) % CIRCULAR_BUFFER_SIZE;
@@ -269,6 +278,7 @@ int main(void) {
             read_pos = (read_pos + FRAME_STRIDE) % CIRCULAR_BUFFER_SIZE;
         }
 
+        TICK_AND_PRINT(tickprint_c0, 99, "%%");
         // A small delay to prevent the main loop from running too fast
         System::Delay(1);
     }
