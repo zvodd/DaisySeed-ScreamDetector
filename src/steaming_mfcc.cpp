@@ -128,6 +128,25 @@ void init_mel_filterbank() {
     }
 }
 
+// We need to declare the external table struct we want to use
+extern arm_cfft_instance_f32 arm_cfft_sR_f32_len2048;
+extern const float32_t twiddleCoef_rfft_4096[];
+
+/**
+ * @brief  Specialized RFFT init function for a fixed size of 2048.
+ * @param[in,out] S  points to an arm_rfft_fast_instance_f32 structure.
+ */
+void my_rfft_fast_init_2048(arm_rfft_fast_instance_f32 *S)
+{
+    // The CFFT instance is a nested struct 'Sint', not a pointer 'pCfft'.
+    // We initialize it by copying the pre-defined constant struct.
+    S->Sint = arm_cfft_sR_f32_len2048;
+    S->fftLenRFFT = 2048;
+
+    // The twiddle factors are now correctly declared via 'extern'.
+    S->pTwiddleRFFT = (float32_t *) twiddleCoef_rfft_4096;
+}
+
 // ====================================================================
 // 4. Core MFCC Processing for a single Frame
 // ====================================================================
@@ -220,10 +239,13 @@ int main(void) {
     init_mel_filterbank();
 
     // Initialize the CMSIS-DSP FFT instance
-    if (arm_rfft_fast_init_f32(&fft_instance, FFT_SIZE) != ARM_MATH_SUCCESS) {
-        hw.PrintLine("Error initializing FFT!");
-        while(1) {}
-    }
+    // if (arm_rfft_fast_init_f32(&fft_instance, FFT_SIZE) != ARM_MATH_SUCCESS) {
+    //     hw.PrintLine("Error initializing FFT!");
+    //     while(1) {}
+    // }
+
+    my_rfft_fast_init_2048(&fft_instance);
+
     
     // Start the audio callback
     hw.StartAudio(AudioCallback);
